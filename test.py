@@ -58,6 +58,7 @@ class CsCanOpen:
                     node.rpdo[1].stop()
                     self.pre_control_id = self.control_id
                     self.control_id = 0
+                    time.sleep(3)
             elif self.control_id == self.pre_control_id:
                 for light_node in self.light_node_list:
                     light_node.rpdo.read()
@@ -67,6 +68,7 @@ class CsCanOpen:
                     node.rpdo[1].stop()
                     self.pre_control_id = 0
                     self.control_id = 0
+                    time.sleep(3)
 
     def proximity_callback(self, msg):
         node_id = msg.cob_id - 384
