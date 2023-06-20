@@ -1,8 +1,8 @@
 [proximity]
-config_file = "/mcu.eds"
+config_file = "mcu.eds"
 
 [light]
-config_file = "/DS301_profile_mcu.eds"
+config_file = "DS301_profile_mcu.eds"
 
 [[proximity.nodes]]
 node_id = 10
@@ -51,5 +51,5 @@ node_id = 22
 node_id = 23
 
 [[light.nodes]]
-node_id = 80
+node_id = 83
 

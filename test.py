@@ -29,8 +29,10 @@ class CsCanOpen:
 
     def load_light_nodes(self, config):
         for node in config["nodes"]:
+            print("Wait for light_node {0:} ready...".format(node["node_id"]))
             can_node = self.can_network.add_node(
                 node["node_id"], config["config_file"])
+            can_node.rpdo.read()
             can_node.nmt.wait_for_heartbeat()
             self.light_node_list.append(can_node)
         print("Check all light nodes completed!\n")
@@ -38,44 +40,44 @@ class CsCanOpen:
     def load_prox_nodes(self, config):
         # node_set = {}
         for node in config["nodes"]:
-            print("Wait for node {0:} ready...".format(node["node_id"]))
+            print("Wait for prox_node {0:} ready...".format(node["node_id"]))
             can_node = self.can_network.add_node(
                 node["node_id"], config["config_file"])
+            can_node.tpdo.read()
             can_node.nmt.wait_for_heartbeat()
             self.porx_node_list.append(can_node)
             # node_set[node["node_id"]] = {"transform": node["transform"], "obj": can_node, "active_cnt": 0}
         print("Check all prox nodes completed!")
         for node in self.porx_node_list:
-            node.tpdo.read()
-            self.control_id = node.tpdo[1].add_callback(
-                self.proximity_callback)
-            if self.control_id != 0:
-                for light_node in self.light_node_list:
-                    light_node.rpdo.read()
-                    light_node.nmt.state = 'PRE-OPERATIONAL'
-                    node.rpdo[1][0x6001].phys = self.control_id
-                    node.rpdo[1].start(1)
-                    node.rpdo[1].stop()
-                    self.pre_control_id = self.control_id
-                    self.control_id = 0
-                    time.sleep(3)
-            elif self.control_id == self.pre_control_id:
-                for light_node in self.light_node_list:
-                    light_node.rpdo.read()
-                    light_node.nmt.state = 'PRE-OPERATIONAL'
-                    node.rpdo[1][0x6001].phys = 0
-                    node.rpdo[1].start(1)
-                    node.rpdo[1].stop()
-                    self.pre_control_id = 0
-                    self.control_id = 0
-                    time.sleep(3)
+            # node.tpdo.read()
+            node.tpdo[1].add_callback(self.proximity_callback)
 
     def proximity_callback(self, msg):
         node_id = msg.cob_id - 384
         for var in msg:
-            ##self.gesture.update_prox(node_id, var.raw)
-            if var.raw < 40:
-                return node_id
+            # self.gesture.update_prox(node_id, var.raw)
+            print(node_id, " : ", var.raw)
+            if var.raw < 20:
+                self.control_id = node_id
+        if self.control_id != 0 and self.control_id != self.pre_control_id:
+            for light_node in self.light_node_list:
+                print(self.control_id)
+                light_node.nmt.state = 'PRE-OPERATIONAL'
+                light_node.rpdo[1][0x6001].phys = self.control_id
+                light_node.rpdo[1].start(1)
+                light_node.nmt.state = 'OPERATIONAL'
+                light_node.rpdo[1].stop()
+                self.pre_control_id = self.control_id
+                self.control_id = 0
+        elif self.control_id == self.pre_control_id and self.control_id != 0:
+            print("reset")
+            for light_node in self.light_node_list:
+                light_node.nmt.state = 'PRE-OPERATIONAL'
+                light_node.rpdo[1][0x6001].phys = 0x00
+                light_node.rpdo[1].start(1)
+                light_node.rpdo[1].stop()
+                self.pre_control_id = 0
+                self.control_id = 0
 
     def disconnect(self):
         self.can_network.disconnect()
