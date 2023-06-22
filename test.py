@@ -11,7 +11,10 @@ class CsCanOpen:
         self.porx_node_list = []
         self.light_node_list = []
         self.control_id = 0
-        self.pre_control_id = 0
+        self.pre_control_id = 1
+
+        self.send_key = False
+        self.start = 0
         self.config = self.load_config(config_file)
         self.can_network = self.canopen_init(can_interface)
         self.load_light_nodes(self.config["light"])
@@ -38,7 +41,6 @@ class CsCanOpen:
         print("Check all light nodes completed!\n")
 
     def load_prox_nodes(self, config):
-        # node_set = {}
         for node in config["nodes"]:
             print("Wait for prox_node {0:} ready...".format(node["node_id"]))
             can_node = self.can_network.add_node(
@@ -46,38 +48,41 @@ class CsCanOpen:
             can_node.tpdo.read()
             can_node.nmt.wait_for_heartbeat()
             self.porx_node_list.append(can_node)
-            # node_set[node["node_id"]] = {"transform": node["transform"], "obj": can_node, "active_cnt": 0}
         print("Check all prox nodes completed!")
         for node in self.porx_node_list:
-            # node.tpdo.read()
             node.tpdo[1].add_callback(self.proximity_callback)
 
     def proximity_callback(self, msg):
         node_id = msg.cob_id - 384
         for var in msg:
-            # self.gesture.update_prox(node_id, var.raw)
             print(node_id, " : ", var.raw)
-            if var.raw < 20:
+            if var.raw < 30:
                 self.control_id = node_id
-        if self.control_id != 0 and self.control_id != self.pre_control_id:
-            for light_node in self.light_node_list:
-                print(self.control_id)
-                light_node.nmt.state = 'PRE-OPERATIONAL'
-                light_node.rpdo[1][0x6001].phys = self.control_id
-                light_node.rpdo[1].start(1)
-                light_node.nmt.state = 'OPERATIONAL'
-                light_node.rpdo[1].stop()
-                self.pre_control_id = self.control_id
+                if not self.send_key:
+                    self.start = time.time()
+                    self.send_key = True
+        if self.send_key and (time.time() - self.start) > 3:
+            if self.control_id != 0 and self.control_id != self.pre_control_id:
+                print(self.control_id, "sending message")
+                for light_node in self.light_node_list:
+                    light_node.nmt.state = 'PRE-OPERATIONAL'
+                    light_node.rpdo[1][0x6001].phys = self.control_id
+                    light_node.rpdo[1].start(2)
+                    light_node.nmt.state = 'OPERATIONAL'
+                    light_node.rpdo[1].stop()
+                    time.sleep(2)
+                    self.pre_control_id = self.control_id
                 self.control_id = 0
-        elif self.control_id == self.pre_control_id and self.control_id != 0:
-            print("reset")
-            for light_node in self.light_node_list:
-                light_node.nmt.state = 'PRE-OPERATIONAL'
-                light_node.rpdo[1][0x6001].phys = 0x00
-                light_node.rpdo[1].start(1)
-                light_node.rpdo[1].stop()
-                self.pre_control_id = 0
-                self.control_id = 0
+            elif self.control_id == self.pre_control_id:
+                print("reset")
+                for light_node in self.light_node_list:
+                    light_node.rpdo[1][0x6001].phys = 0x00
+                    light_node.rpdo[1].start(2)
+                    light_node.rpdo[1].stop()
+                    time.sleep(2)
+                    self.control_id = 0
+                self.pre_control_id = 1
+            self.send_key = False
 
     def disconnect(self):
         self.can_network.disconnect()
