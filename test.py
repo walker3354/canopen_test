@@ -56,31 +56,29 @@ class CsCanOpen:
         node_id = msg.cob_id - 384
         for var in msg:
             print(node_id, " : ", var.raw)
-            if var.raw < 30:
+            if var.raw < 15:
                 self.control_id = node_id
                 if not self.send_key:
                     self.start = time.time()
                     self.send_key = True
-        if self.send_key and (time.time() - self.start) > 3:
+        if self.send_key and (time.time() - self.start) > 4:
             if self.control_id != 0 and self.control_id != self.pre_control_id:
                 print(self.control_id, "sending message")
                 for light_node in self.light_node_list:
                     light_node.nmt.state = 'PRE-OPERATIONAL'
                     light_node.rpdo[1][0x6001].phys = self.control_id
-                    light_node.rpdo[1].start(2)
+                    light_node.rpdo[1].start(0.2)
                     light_node.nmt.state = 'OPERATIONAL'
                     light_node.rpdo[1].stop()
-                    time.sleep(2)
-                    self.pre_control_id = self.control_id
+                self.pre_control_id = self.control_id
                 self.control_id = 0
             elif self.control_id == self.pre_control_id:
                 print("reset")
                 for light_node in self.light_node_list:
                     light_node.rpdo[1][0x6001].phys = 0x00
-                    light_node.rpdo[1].start(2)
+                    light_node.rpdo[1].start(0.2)
                     light_node.rpdo[1].stop()
-                    time.sleep(2)
-                    self.control_id = 0
+                self.control_id = 0
                 self.pre_control_id = 1
             self.send_key = False
 
@@ -89,9 +87,9 @@ class CsCanOpen:
 
 
 def main():
-    cs_canopen = CsCanOpen("can0", "./tw-island-dev.toml")
+    cs_canopen = CsCanOpen("can0", "./test.toml")
     while True:
-        time.sleep(1)
+        time.sleep(0.2)
     return
 
 
