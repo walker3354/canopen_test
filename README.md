@@ -1,4 +1,4 @@
-# canopen_test(UROP walker + jason + mentor justin)
+# canopen_test(UROP walker + johson + mentor justin)
 
 this project is to control the twisland, we use canopen protocol to send and receive 
 the data,and emit the swap message to the twisland map
