@@ -1,9 +1,14 @@
+#proximity_node's eds => mcu.eds
 [proximity]
-config_file = "mcu.eds"
+config_file = "/home/cityscpe/cityscope-canopen-controller/mcu.eds"
 
+#light_node's eds => DS301_profile_mcu.eds
 [light]
-config_file = "DS301_profile_mcu.eds"
+config_file = "/home/cityscpe/cityscope-canopen-controller/DS301_profile_mcu.eds"
 
+
+#proximity_node
+#left
 [[proximity.nodes]]
 node_id = 10
 
@@ -16,8 +21,30 @@ node_id = 12
 [[proximity.nodes]]
 node_id = 13
 
-#button
+[[proximity.nodes]]
+node_id = 36
 
+[[proximity.nodes]]
+node_id = 37
+
+[[proximity.nodes]]
+node_id = 38
+
+[[proximity.nodes]]
+node_id = 39
+
+[[proximity.nodes]]
+node_id = 40
+
+[[proximity.nodes]]
+node_id = 41
+
+[[proximity.nodes]]
+node_id = 42
+
+[[proximity.nodes]]
+node_id = 43
+#bottom
 [[proximity.nodes]]
 node_id = 14
 
@@ -33,8 +60,8 @@ node_id = 17
 [[proximity.nodes]]
 node_id = 18
 
-#right
 
+#right
 [[proximity.nodes]]
 node_id = 19
 
@@ -50,6 +77,70 @@ node_id = 22
 [[proximity.nodes]]
 node_id = 23
 
+[[proximity.nodes]]
+node_id = 24
+
+[[proximity.nodes]]
+node_id = 25
+
+[[proximity.nodes]]
+node_id = 26
+
+[[proximity.nodes]]
+node_id = 27
+
+[[proximity.nodes]]
+node_id = 28
+
+[[proximity.nodes]]
+node_id = 29
+
+[[proximity.nodes]]
+node_id = 30
+
+[[proximity.nodes]]
+node_id = 31
+
+[[proximity.nodes]]
+node_id = 32
+
+[[proximity.nodes]]
+node_id = 33
+
+[[proximity.nodes]]
+node_id = 34
+
+[[proximity.nodes]]
+node_id = 35
+
+#top
+[[proximity.nodes]]
+node_id = 31
+
+[[proximity.nodes]]
+node_id = 32
+
+[[proximity.nodes]]
+node_id = 33
+
+[[proximity.nodes]]
+node_id = 34
+
+[[proximity.nodes]]
+node_id = 35
+
+
+
+#light nodes
+#upper lefts
+[[light.nodes]]
+node_id = 80
+#upper right
+[[light.nodes]]
+node_id = 81
+#lower left
 [[light.nodes]]
 node_id = 83
-
+#lower right
+[[light.nodes]]
+node_id = 82
